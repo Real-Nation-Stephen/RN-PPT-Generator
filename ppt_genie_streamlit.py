@@ -119,16 +119,35 @@ def convert_google_drive_url(drive_url):
     
     return drive_url
 
+def get_user_gradient(user_name):
+    """Get a consistent gradient for a user based on their name"""
+    gradients = [
+        "#667eea, #764ba2",  # Purple-Blue
+        "#f093fb, #f5576c",  # Pink-Red
+        "#4facfe, #00f2fe",  # Blue-Cyan
+        "#43e97b, #38f9d7",  # Green-Teal
+        "#fa709a, #fee140",  # Pink-Yellow
+        "#a8edea, #fed6e3",  # Teal-Pink
+        "#ffecd2, #fcb69f",  # Peach-Orange
+        "#ff9a9e, #fecfef",  # Rose-Purple
+    ]
+    
+    # Use hash of name to consistently assign gradient
+    name_hash = hash(user_name.lower()) % len(gradients)
+    return gradients[name_hash]
+
 def display_profile_image(image_url, size=100, user_name="User"):
     """Display profile image with fallback"""
     if not image_url:
-        # Default avatar with user's initials
+        # Default avatar with user's initials and unique gradient
         initials = ''.join([name[0].upper() for name in user_name.split()[:2]])
+        gradient = get_user_gradient(user_name)
         st.markdown(f"""
-        <div style="width: {size}px; height: {size}px; background-color: #2b1e66; 
+        <div style="width: {size}px; height: {size}px; 
+                    background: linear-gradient(135deg, {gradient}); 
                     border-radius: 50%; display: flex; align-items: center; 
                     justify-content: center; margin: 0 auto; color: white; 
-                    font-size: {size//3}px; font-weight: bold;">
+                    font-size: {size//3}px; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
             {initials}
         </div>
         """, unsafe_allow_html=True)
@@ -138,6 +157,8 @@ def display_profile_image(image_url, size=100, user_name="User"):
     direct_url = convert_google_drive_url(image_url)
     
     try:
+        initials = ''.join([name[0].upper() for name in user_name.split()[:2]])
+        gradient = get_user_gradient(user_name)
         st.markdown(f"""
         <div style="display: flex; justify-content: center;">
             <img src="{direct_url}" 
@@ -145,22 +166,25 @@ def display_profile_image(image_url, size=100, user_name="User"):
                         object-fit: cover; border: 3px solid #2b1e66;" 
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                  alt="{user_name}">
-            <div style="width: {size}px; height: {size}px; background-color: #2b1e66; 
+            <div style="width: {size}px; height: {size}px; 
+                        background: linear-gradient(135deg, {gradient}); 
                         border-radius: 50%; display: none; align-items: center; 
                         justify-content: center; color: white; font-size: {size//3}px; 
-                        font-weight: bold;">
-                {''.join([name[0].upper() for name in user_name.split()[:2]])}
+                        font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
+                {initials}
             </div>
         </div>
         """, unsafe_allow_html=True)
     except:
-        # Fallback to initials
+        # Fallback to initials with gradient
         initials = ''.join([name[0].upper() for name in user_name.split()[:2]])
+        gradient = get_user_gradient(user_name)
         st.markdown(f"""
-        <div style="width: {size}px; height: {size}px; background-color: #2b1e66; 
+        <div style="width: {size}px; height: {size}px; 
+                    background: linear-gradient(135deg, {gradient}); 
                     border-radius: 50%; display: flex; align-items: center; 
                     justify-content: center; margin: 0 auto; color: white; 
-                    font-size: {size//3}px; font-weight: bold;">
+                    font-size: {size//3}px; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
             {initials}
         </div>
         """, unsafe_allow_html=True)
@@ -207,10 +231,18 @@ def show_login():
     .stButton > button[kind="primary"] {
         background-color: #2b1e66 !important;
         border-color: #2b1e66 !important;
+        color: white !important;
     }
     .stButton > button[kind="primary"]:hover {
         background-color: #1e1547 !important;
         border-color: #1e1547 !important;
+        color: white !important;
+    }
+    .stButton > button[kind="primary"]:focus {
+        background-color: #1e1547 !important;
+        border-color: #1e1547 !important;
+        color: white !important;
+        box-shadow: 0 0 0 2px rgba(43, 30, 102, 0.3) !important;
     }
     </style>
     """, unsafe_allow_html=True)
