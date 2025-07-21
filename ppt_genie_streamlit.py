@@ -49,7 +49,7 @@ for var, default_value in SESSION_STATE_VARS.items():
 # Set up the Streamlit page
 st.set_page_config(
     page_title="RN PowerPoint Generator",
-    page_icon="assets/icon.png",
+    page_icon="assets/App_Icon_PPT.png",
     layout="wide"
 )
 
