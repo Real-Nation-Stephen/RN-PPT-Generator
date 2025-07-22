@@ -598,9 +598,33 @@ def check_image_file(image_path):
         logger.warning(f"Invalid or corrupted image file {image_path}: {str(e)}")
         return False
 
+def sort_image_files_by_sequence(image_files):
+    """Sort image files based on naming convention: 'name_' (slide 1), 'name_2' (slide 2), 'name_3' (slide 3), etc."""
+    def get_sort_key(uploaded_file):
+        filename = uploaded_file.name
+        name_without_ext = os.path.splitext(filename)[0]
+        
+        # Check if filename ends with underscore followed by number or just underscore
+        if '_' in name_without_ext:
+            parts = name_without_ext.rsplit('_', 1)
+            if len(parts) == 2:
+                base_name, suffix = parts
+                if suffix == '':  # ends with just underscore (e.g., 'file_') - this is slide 1
+                    return 1
+                elif suffix.isdigit():  # ends with underscore and number (e.g., 'file_2', 'file_3')
+                    return int(suffix)
+        
+        # If doesn't match pattern, sort alphabetically at the end
+        return 999999  # Large number to put at end
+    
+    return sorted(image_files, key=get_sort_key)
+
 def generate_ppt_from_images(image_files, auto_resize=True):
     """Generate PowerPoint presentation from uploaded images"""
     try:
+        # Sort images according to naming convention
+        sorted_image_files = sort_image_files_by_sequence(image_files)
+        
         # Create presentation
         prs = Presentation()
         
@@ -610,7 +634,7 @@ def generate_ppt_from_images(image_files, auto_resize=True):
         prs.slide_height = Inches(height_inches)
         
         # Process each image
-        for i, uploaded_file in enumerate(image_files):
+        for i, uploaded_file in enumerate(sorted_image_files):
             try:
                 # Create a temporary file for the image
                 with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as tmp_file:
@@ -714,6 +738,13 @@ if st.button("🚀 Generate Presentation", disabled=not uploaded_files, type="pr
     else:
         try:
             with st.spinner("Generating PowerPoint presentation..."):
+                # Show file sequencing info
+                sorted_files = sort_image_files_by_sequence(uploaded_files)
+                if len(sorted_files) > 1:
+                    st.info("📋 **Slide sequence detected:**\n" + 
+                           "\n".join([f"{i+1}. {file.name}" for i, file in enumerate(sorted_files[:10])]) +
+                           (f"\n... and {len(sorted_files)-10} more" if len(sorted_files) > 10 else ""))
+                
                 # Generate the presentation
                 ppt_buffer = generate_ppt_from_images(uploaded_files, auto_resize)
                 
